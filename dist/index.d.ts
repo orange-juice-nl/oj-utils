@@ -1,0 +1,20 @@
+export declare const getTransitionDuration: (element: HTMLElement, deep?: boolean) => number;
+export declare const getOuterHeight: (element: HTMLElement) => number;
+export declare const getOuterWidth: (element: HTMLElement) => number;
+export declare const getOffsetsOnPage: (element: HTMLElement) => {
+    top: number;
+    left: number;
+};
+export declare const withinViewport: (element: Element, completely?: boolean) => boolean;
+export declare const childOf: (container: HTMLElement, child: HTMLElement) => boolean;
+export declare const getEventProps: (e: any) => any;
+export declare const getOffsetX: (e: any) => number;
+export declare const getOffsetY: (e: any) => number;
+export declare const sanitizeHTML: (html: string) => string;
+export declare const getRootElements: <T extends HTMLElement>(selector: string) => T[];
+export declare const jsonToB64: (json: any) => string;
+export declare const jsonFromB64: (b64: string) => any;
+export declare const getRootData: <T>(x: HTMLElement) => T;
+export declare const mounter: <T extends {}>(selector: string, cb: (root: HTMLElement, data: T) => void) => void;
+export declare const loadScript: (url: string, target?: HTMLElement) => Promise<Event>;
+export declare const appendDivTo: (target?: HTMLElement) => HTMLDivElement;
