@@ -156,28 +156,44 @@ export const exec = <T extends (...args: any[]) => unknown>(fn: T, ...args: Para
     ? fn.apply(this, args)
     : undefined
 
-export const debounce = <T extends (...args: any[]) => unknown>(threshold: number, fn: T) => {
+export const debounce = <T extends (...args: any[]) => R, R>(threshold: number, fn: T, head = false, tail = true) => {
   let t: any
-  return (...args: Parameters<T>) => {
+  let c: R
+  return ((...args: Parameters<T>) => {
+    if (t === undefined && head)
+      c = fn(...args)
+
     clearTimeout(t)
-    t = setTimeout(() => fn(...args), threshold)
-  }
+    t = setTimeout(() => {
+      if (tail)
+        c = fn(...args)
+      t = undefined
+    }, threshold)
+
+    return c
+  }) as T
 }
 
-export const throttle = <T extends (...args: any[]) => unknown>(threshold: number, fn: T, tail = false) => {
+export const throttle = <T extends (...args: any[]) => R, R>(threshold: number, fn: T, tail = false) => {
   let t: any
   let p: number
-  return (...args: Parameters<T>) => {
+  let c: R
+  return ((...args: Parameters<T>) => {
     clearTimeout(t)
     const now = Date.now()
     if (!p || now - p >= threshold) {
       p = now
-      fn(...args)
+      c = fn(...args)
     }
     else if (tail) {
-      t = setTimeout(() => fn(...args), threshold)
+      t = setTimeout(() => {
+        c = fn(...args)
+        t = undefined
+      }, threshold)
     }
-  }
+
+    return c
+  }) as T
 }
 
 export const memoize = <T extends (...args: any[]) => unknown, H extends (...args: Parameters<T>) => string>(fn: T, hashFn?: H) => {
@@ -185,7 +201,8 @@ export const memoize = <T extends (...args: any[]) => unknown, H extends (...arg
 
   return ((...args: Parameters<T>) => {
     const hash = hashFn?.(...args) ?? JSON.stringify(args)
-    cache[hash] ??= fn(...args)
+    if (cache[hash] === undefined)
+      cache[hash] = fn(...args) ?? null
     return cache[hash]
   }) as any as T
 }
@@ -292,3 +309,14 @@ export const imageUrlToB64 = (url: string) =>
   fetch(url)
     .then(x => x.blob())
     .then(x => fileToB64(x))
+
+export type DynamicValue<T> = T | (() => T)
+export type DynamicObject<T> = { [Property in keyof T]: DynamicValue<T[Property]> }
+export type DynamicValueType<T> = T extends () => unknown ? ReturnType<T> : T
+export type DynamicObjectType<T> = { [Property in keyof T]: DynamicValueType<T[Property]> }
+
+export const getDynamicVal = <T extends DynamicValue<unknown>>(x: T) =>
+  typeof x === "function" ? x() : x as DynamicValueType<T>
+
+export const getDynamicObj = <T extends DynamicObject<unknown>>(x: T) =>
+  Object.fromEntries(Object.entries(x).map(([k, v]) => [k, getDynamicVal(v)])) as DynamicObjectType<T>
