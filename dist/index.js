@@ -25,7 +25,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -48,7 +48,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.imageUrlToB64 = exports.fileToB64 = exports.base64toBlob = exports.getImageTypeFromB64 = exports.createImage = exports.isIE = exports.formatPrice = exports.formatSize = exports.clone = exports.removeIfExists = exports.createToggle = exports.chunk = exports.memoize = exports.throttle = exports.debounce = exports.exec = exports.diff = exports.increment = exports.repeatMap = exports.arrToObj = exports.objToArr = exports.groupArr = exports.groupObj = exports.mapObj = exports.reduceObj = exports.filterObj = exports.findObjKey = exports.generateHashFromString = exports.uniqueArray = exports.pipe = exports.getDpi = exports.pxToMm = exports.mmToPx = exports.UUID = exports.pause = exports.cleanString = exports.clamp = exports.mapRange = exports.randomList = exports.randomDec = exports.randomInt = void 0;
+exports.getDynamicObj = exports.getDynamicVal = exports.imageUrlToB64 = exports.fileToB64 = exports.base64toBlob = exports.getImageTypeFromB64 = exports.createImage = exports.isIE = exports.formatPrice = exports.formatSize = exports.clone = exports.removeIfExists = exports.createToggle = exports.chunk = exports.memoize = exports.throttle = exports.debounce = exports.exec = exports.diff = exports.increment = exports.repeatMap = exports.arrToObj = exports.objToArr = exports.groupArr = exports.groupObj = exports.mapObj = exports.reduceObj = exports.filterObj = exports.findObjKey = exports.generateHashFromString = exports.uniqueArray = exports.pipe = exports.getDpi = exports.pxToMm = exports.mmToPx = exports.UUID = exports.pause = exports.cleanString = exports.clamp = exports.mapRange = exports.randomList = exports.randomDec = exports.randomInt = void 0;
 var randomInt = function (min, max) {
     if (min === void 0) { min = 0; }
     if (max === void 0) { max = 9999; }
@@ -244,23 +244,34 @@ var exec = function (fn) {
         : undefined;
 };
 exports.exec = exec;
-var debounce = function (threshold, fn) {
+var debounce = function (threshold, fn, head, tail) {
+    if (head === void 0) { head = false; }
+    if (tail === void 0) { tail = true; }
     var t;
-    return function () {
+    var c;
+    return (function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
+        if (t === undefined && head)
+            c = fn.apply(void 0, args);
         clearTimeout(t);
-        t = setTimeout(function () { return fn.apply(void 0, args); }, threshold);
-    };
+        t = setTimeout(function () {
+            if (tail)
+                c = fn.apply(void 0, args);
+            t = undefined;
+        }, threshold);
+        return c;
+    });
 };
 exports.debounce = debounce;
 var throttle = function (threshold, fn, tail) {
     if (tail === void 0) { tail = false; }
     var t;
     var p;
-    return function () {
+    var c;
+    return (function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
@@ -269,12 +280,16 @@ var throttle = function (threshold, fn, tail) {
         var now = Date.now();
         if (!p || now - p >= threshold) {
             p = now;
-            fn.apply(void 0, args);
+            c = fn.apply(void 0, args);
         }
         else if (tail) {
-            t = setTimeout(function () { return fn.apply(void 0, args); }, threshold);
+            t = setTimeout(function () {
+                c = fn.apply(void 0, args);
+                t = undefined;
+            }, threshold);
         }
-    };
+        return c;
+    });
 };
 exports.throttle = throttle;
 var memoize = function (fn, hashFn) {
@@ -286,7 +301,8 @@ var memoize = function (fn, hashFn) {
             args[_i] = arguments[_i];
         }
         var hash = (_a = hashFn === null || hashFn === void 0 ? void 0 : hashFn.apply(void 0, args)) !== null && _a !== void 0 ? _a : JSON.stringify(args);
-        (_b = cache[hash]) !== null && _b !== void 0 ? _b : (cache[hash] = fn.apply(void 0, args));
+        if (cache[hash] === undefined)
+            cache[hash] = (_b = fn.apply(void 0, args)) !== null && _b !== void 0 ? _b : null;
         return cache[hash];
     });
 };
@@ -394,3 +410,14 @@ var imageUrlToB64 = function (url) {
         .then(function (x) { return (0, exports.fileToB64)(x); });
 };
 exports.imageUrlToB64 = imageUrlToB64;
+var getDynamicVal = function (x) {
+    return typeof x === "function" ? x() : x;
+};
+exports.getDynamicVal = getDynamicVal;
+var getDynamicObj = function (x) {
+    return Object.fromEntries(Object.entries(x).map(function (_a) {
+        var k = _a[0], v = _a[1];
+        return [k, (0, exports.getDynamicVal)(v)];
+    }));
+};
+exports.getDynamicObj = getDynamicObj;

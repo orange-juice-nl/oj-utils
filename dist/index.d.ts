@@ -45,13 +45,13 @@ export declare const pipe: <T>(value: T) => {
 };
 export declare const uniqueArray: <T>(arr: T[]) => T[];
 export declare const generateHashFromString: (str: string) => number;
-export declare type FindCallbackObj<T> = (item: T[Extract<keyof T, string>], key: string, obj: T) => boolean | undefined;
-export declare type MapCallbackObj<T, R> = (item: T[Extract<keyof T, string>], key: string, obj: T) => R;
-export declare type ReduceCallbackObj<T, R> = (result: R, item: T[Extract<keyof T, string>], key: string, obj: T) => R;
-export declare type KeysOf<T, V> = {
+export type FindCallbackObj<T> = (item: T[Extract<keyof T, string>], key: string, obj: T) => boolean | undefined;
+export type MapCallbackObj<T, R> = (item: T[Extract<keyof T, string>], key: string, obj: T) => R;
+export type ReduceCallbackObj<T, R> = (result: R, item: T[Extract<keyof T, string>], key: string, obj: T) => R;
+export type KeysOf<T, V> = {
     [K in keyof T]: V;
 };
-export declare type ValueOf<T> = T[Extract<keyof T, string>];
+export type ValueOf<T> = T[Extract<keyof T, string>];
 export declare const findObjKey: <T>(obj: T, cb: FindCallbackObj<T>) => Extract<keyof T, string>;
 export declare const filterObj: <T>(obj: T, cb: FindCallbackObj<T>) => Partial<T>;
 export declare const reduceObj: <T, R>(obj: T, cb: ReduceCallbackObj<T, R>, result: R) => R;
@@ -76,8 +76,8 @@ export declare const repeatMap: <T = number>(times: number, fn?: (i: number) => 
 export declare const increment: () => () => number;
 export declare const diff: (cb: () => number, reset?: boolean) => () => number;
 export declare const exec: <T extends (...args: any[]) => unknown>(fn: T, ...args: Parameters<T>) => ReturnType<T>;
-export declare const debounce: <T extends (...args: any[]) => unknown>(threshold: number, fn: T) => (...args: Parameters<T>) => void;
-export declare const throttle: <T extends (...args: any[]) => unknown>(threshold: number, fn: T, tail?: boolean) => (...args: Parameters<T>) => void;
+export declare const debounce: <T extends (...args: any[]) => R, R>(threshold: number, fn: T, head?: boolean, tail?: boolean) => T;
+export declare const throttle: <T extends (...args: any[]) => R, R>(threshold: number, fn: T, tail?: boolean) => T;
 export declare const memoize: <T extends (...args: any[]) => unknown, H extends (...args: Parameters<T>) => string>(fn: T, hashFn?: H) => T;
 export declare const chunk: <T>(n: number, arr: T[]) => T[][];
 export declare const createToggle: () => {
@@ -100,3 +100,13 @@ export declare const getImageTypeFromB64: (source: string) => string;
 export declare const base64toBlob: (src: string) => Blob;
 export declare const fileToB64: (file: File | Blob) => Promise<string>;
 export declare const imageUrlToB64: (url: string) => Promise<string>;
+export type DynamicValue<T> = T | (() => T);
+export type DynamicObject<T> = {
+    [Property in keyof T]: DynamicValue<T[Property]>;
+};
+export type DynamicValueType<T> = T extends () => unknown ? ReturnType<T> : T;
+export type DynamicObjectType<T> = {
+    [Property in keyof T]: DynamicValueType<T[Property]>;
+};
+export declare const getDynamicVal: <T extends unknown>(x: T) => any;
+export declare const getDynamicObj: <T extends DynamicObject<unknown>>(x: T) => DynamicObjectType<T>;
